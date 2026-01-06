@@ -8,9 +8,9 @@ from app import app
 def test_predict():
     client = app.test_client()
     response = client.post("/predict", json={
-        "age": 30,
-        "income": 60,
+        "annual_income": 60,
         "spending_score": 50
     })
+
     assert response.status_code == 200
     assert "cluster" in response.json
