@@ -1,15 +1,16 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from app import app
-import json
 
 def test_predict():
     client = app.test_client()
-    response = client.post(
-        "/predict",
-        data=json.dumps({
-            "annual_income": 60,
-            "spending_score": 70
-        }),
-        content_type="application/json"
-    )
+    response = client.post("/predict", json={
+        "age": 30,
+        "income": 60,
+        "spending_score": 50
+    })
     assert response.status_code == 200
-    assert "cluster" in response.get_json()
+    assert "cluster" in response.json
