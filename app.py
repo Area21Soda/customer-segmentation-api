@@ -4,19 +4,41 @@ import numpy as np
 
 app = Flask(__name__)
 
-# Cargar modelo y scaler
+# ==============================
+# CARGA DE MODELO Y ESCALADOR
+# ==============================
 model = joblib.load("kmeans_model.pkl")
 scaler = joblib.load("scaler.pkl")
 
-# Etiquetas de clusters
-cluster_labels = {
-    0: "Cliente Conservador (Bajo ingreso / Bajo gasto)",
-    1: "Cliente Impulsivo (Bajo ingreso / Alto gasto)",
-    2: "Cliente Prudente (Alto ingreso / Bajo gasto)",
-    3: "Cliente Premium (Alto ingreso / Alto gasto)",
-    4: "Cliente Potencial (Ingreso medio / Gasto medio)"
-}
+# ==============================
+# CENTROIDES NORMALIZADOS
+# ==============================
+centroids = model.cluster_centers_
 
+# ==============================
+# INTERPRETACIÓN DINÁMICA
+# ==============================
+def interpret_cluster(cluster_id):
+    income, spending = centroids[cluster_id]
+
+    # Umbrales sobre datos normalizados
+    if income < -0.5 and spending < -0.5:
+        return "Cliente Conservador (Bajo ingreso / Bajo gasto)"
+
+    if income < -0.5 and spending >= 0.5:
+        return "Cliente Impulsivo (Bajo ingreso / Alto gasto)"
+
+    if income >= 0.5 and spending < -0.5:
+        return "Cliente Prudente (Alto ingreso / Bajo gasto)"
+
+    if income >= 0.5 and spending >= 0.5:
+        return "Cliente Premium (Alto ingreso / Alto gasto)"
+
+    return "Cliente Potencial (Ingreso medio / Gasto medio)"
+
+# ==============================
+# RUTAS
+# ==============================
 @app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
@@ -32,11 +54,15 @@ def predict():
     X_scaled = scaler.transform(X)
 
     cluster = int(model.predict(X_scaled)[0])
+    segmento = interpret_cluster(cluster)
 
     return jsonify({
         "cluster": cluster,
-        "segmento": cluster_labels[cluster]
+        "segmento": segmento
     })
 
+# ==============================
+# MAIN
+# ==============================
 if __name__ == "__main__":
     app.run(debug=True)
