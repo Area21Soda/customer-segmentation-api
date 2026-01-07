@@ -14,3 +14,4 @@ def test_predict():
 
     assert response.status_code == 200
     assert "cluster" in response.json
+    assert "segmento" in response.json

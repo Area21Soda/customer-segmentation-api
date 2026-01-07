@@ -1,22 +1,24 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import joblib
 import numpy as np
 
 app = Flask(__name__)
 
+# Cargar modelo y scaler
 model = joblib.load("kmeans_model.pkl")
 scaler = joblib.load("scaler.pkl")
 
-CLUSTER_DESCRIPTION = {
-    0: "Bajo ingreso / Bajo gasto",
-    1: "Bajo ingreso / Alto gasto",
-    2: "Ingreso medio / Gasto medio",
-    3: "Alto ingreso / Alto gasto",
-    4: "Alto ingreso / Bajo gasto"
+# Etiquetas de clusters
+cluster_labels = {
+    0: "Cliente Conservador (Bajo ingreso / Bajo gasto)",
+    1: "Cliente Impulsivo (Bajo ingreso / Alto gasto)",
+    2: "Cliente Prudente (Alto ingreso / Bajo gasto)",
+    3: "Cliente Premium (Alto ingreso / Alto gasto)",
+    4: "Cliente Potencial (Ingreso medio / Gasto medio)"
 }
 
-@app.route("/")
-def index():
+@app.route("/", methods=["GET"])
+def home():
     return render_template("index.html")
 
 @app.route("/predict", methods=["POST"])
@@ -33,8 +35,8 @@ def predict():
 
     return jsonify({
         "cluster": cluster,
-        "description": CLUSTER_DESCRIPTION[cluster]
+        "segmento": cluster_labels[cluster]
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(debug=True)
